@@ -26,6 +26,7 @@
 FILE* salida;  // Archivo con los tokens generados
 FILE* errores; // Registro de errores encontrados
 FILE* tablas;  // Visualiza el estado final de las tablas
+FILE* tokens;  // Muestra la entrada que genera los tokens
 
 // Alias de tipo para las estructuras usadas
 typedef struct _token TOKEN;
@@ -36,6 +37,7 @@ typedef struct _lista LISTA;
 struct _token{
     int clase; // Tipo de tabla a la que pertenece
     int valor; // Posicion que ocupa en la tabla
+    TOKEN* siguiente; // Siguiente token en orden
 };
 
 // Estructura para guardar valores en las tablas
@@ -51,9 +53,8 @@ struct _lista{
     NODO* head; // Primer elemento de la tabla
 };
 
-// Variables de apoyo en la ejecucion
+// Arreglo que guarda las tablas generadas
 LISTA* listas[10];
-
 /*********************************
  0 - Operadaores aritmeticos
  1 - Operadores logicos
@@ -67,11 +68,16 @@ LISTA* listas[10];
  9 - Operadores sobre cadenas
 *********************************/
 
-// Encabezado de funciones
+// Estructura que guarda los tokens generados
+TOKEN* tokens_L = NULL;
+
+// Prototipo de funciones
 LISTA* crearLista(int clase);
 NODO* crearNodo(char* cad, int valor);
+TOKEN* crearToken(int clase, int valor);
 int esVacia(LISTA* lista);
 void agregarEntrada(LISTA* lista, char* cad);
+void verificarEntrada(LISTA* lista, char* cad);
 void imprimirLista(LISTA* lista);
 void generarTablas();
 void imprimirTablas();
@@ -100,32 +106,60 @@ opasig  {oparit}?=
 
 %%
 {oparit}    {fprintf(salida,"\n%s - Clase 0, operador aritmetico", yytext);}
+
 {oplog}     {fprintf(salida,"\n%s - Clase 1, operador logico", yytext);}
+
 {oprel}     {fprintf(salida,"\n%s - Clase 2, operador relacional", yytext);}
+
 {consnum}   {fprintf(salida,"\n%s - Clase 3, constante numerica entera", yytext);}
+
 {palres}    {fprintf(salida,"\n%s - Clase 4, palabra reservada", yytext);}
-{ident}     {fprintf(salida,"\n%s - Clase 5, identificador", yytext);}
+
+{ident}     {fprintf(salida,"\n%s - Clase 5, identificador", yytext);
+                                   char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                   strncpy(c_aux, yytext, yyleng);
+                                   c_aux[yyleng] = '\0';
+                                   verificarEntrada(listas[5], c_aux);}
+
 {simbesp}   {fprintf(salida,"\n%s - Clase 6, simbolo especial", yytext);}
+
 {opasig}    {fprintf(salida,"\n%s - Clase 7, operdador de asignacion", yytext);}
-{cadena}    {fprintf(salida,"\n%s - Clase 8, constante cadena", yytext);}
+
+{cadena}    {fprintf(salida,"\n%s - Clase 8, constante cadena", yytext);
+                                   char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                   strncpy(c_aux, yytext, yyleng);
+                                   c_aux[yyleng] = '\0';
+                                   agregarEntrada(listas[8], c_aux);}
+
 {opcad}     {fprintf(salida,"\n%s - Clase 9, operador de cadenas", yytext);}
+
 %%
 
 main()
 {
     // Abre flujo de datos
-    salida = fopen("salida.txt", "w"); 
-    // Coloca tabla en estado iniciañ
+    salida = fopen("salida.txt", "w");
+    tokens = fopen("tokens.txt", "w"); 
+
+    // Coloca tabla en estado inicial
     generarTablas();
+    
     // Inicia analis lexico
     yylex();
+    
     // Guarda el estado final de las tablas
     imprimirTablas();
     printf("\n");
+    
     // Libera el espacio usado
     liberarMemoria();
+    
     // Cierra el flujo de datos
     fclose(salida);
+    fclose(tokens_F);
+
+    system("clear");
+    printf("\nAnalisis terminao\n");
     return 0;
 }
 
@@ -147,7 +181,16 @@ NODO* crearNodo(char* cad, int valor)
     nuevo_nodo -> valor = valor; // Indica valor correspondiente
     nuevo_nodo -> siguiente = NULL;
     return nuevo_nodo;  
+}
 
+// Genera el token a partir de los datos leidos
+TOKEN* crearToken(int clase, int valor)
+{
+    TOKEN* nuevo_token = (TOKEN*) malloc(sizeof(TOKEN));
+    nuevo_token -> clase = clase;
+    nuevo_token -> valor = valor;
+    nuevo_token -> siguiente = NULL;
+    return nuevo_token;
 }
 
 // Determina si la lista cuenta con elementos
@@ -157,6 +200,40 @@ int esVacia(LISTA* lista)
         return 1;
     
     return 0;
+}
+
+// Verifica si una entrada pertenece a una tabla
+void verificarEntrada(LISTA* lista, char* cad)
+{
+    // Una lista vacia no verifica
+    if(esVacia(lista))
+        agregarEntrada(lista, cad);
+    
+    // Bandera para verificar coincidencia
+    int existe = 0;
+    
+    // Nodo de apoyo para verificar
+    NODO* nodo_aux = lista -> head;
+
+    while(nodo_aux != NULL)
+    {
+        // Realiza la comparacion con el id en la entrada
+        if(!strcmp(nodo_aux -> cad, cad))
+        {
+            existe = 1;
+            break;
+        }
+
+        // Nos desplazamos en la tabla
+        nodo_aux = nodo_aux -> siguiente;
+    }
+
+    // Si se encendio la bandera, el elemento ya existe
+    if(existe)
+        return;
+    
+    // Si no se encendio, es un nuevo elemento
+    agregarEntrada(lista, cad);
 }
 
 // Agrega una entrada a la tabla
@@ -184,7 +261,6 @@ void agregarEntrada(LISTA* lista, char* cad)
         // Se coloca el nodo cuando se llega el final
         nodo_aux -> siguiente = crearNodo(cad, valor);
     }
-
 }
 
 // Coloca todas las tablas en su estado inicial
@@ -241,7 +317,7 @@ void generarTablas()
     agregarEntrada(listas[6], ":");
     agregarEntrada(listas[6], "*");
 
-    // Agregado de elementos en la tabla 7
+    // Agregado de elementos en la tabla 7  
     agregarEntrada(listas[7], "=");
     agregarEntrada(listas[7], "+=");
     agregarEntrada(listas[7], "-=");
@@ -323,7 +399,7 @@ void buscaNombre(int clase)
             fprintf(tablas,"Simbolos especiales\n");
             break;
         case 7:
-            fprintf(tablas,"Operadores de asugnacion\n");
+            fprintf(tablas,"Operadores de asignacion\n");
             break;
         case 8:
             fprintf(tablas,"Constantes cadenas\n");
@@ -352,14 +428,20 @@ void liberarMemoria()
 // Elimina todos los nodos de una lista
 void vaciarLista(LISTA* lista)                            
 {
-    NODO* kamikaze = lista -> head;             // Se posiciona al inicio de la lista   
+    // Se posiciona al inicio de la lista   
+    NODO* kamikaze = lista -> head;
     
-    while (kamikaze != NULL)                    // Continuara mientras haya nodos en la lista
+    // Continuara mientras haya nodos en la lista
+    while (kamikaze != NULL)                    
     {
-        lista -> head = kamikaze -> siguiente;  // Se desplaza el inicio de la lista
-        kamikaze -> siguiente = NULL;           // Se pierde la referencia a la lista
-        free(kamikaze);                         // Se libera el espacio reservado
-        kamikaze = lista -> head;               // Regresamos al inicio de la lista        
+        // Se desplaza el inicio de la lista
+        lista -> head = kamikaze -> siguiente;  
+        // Se pierde la referencia a la lista
+        kamikaze -> siguiente = NULL;           
+        // Se libera el espacio reservado
+        free(kamikaze);                         
+        // Regresamos al inicio de la lista
+        kamikaze = lista -> head;                       
     };
 };
 
