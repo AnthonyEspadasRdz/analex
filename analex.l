@@ -7,7 +7,7 @@
     Desarollado por:
 
         Espadas Rodriguez Anthony Jonathan - 421033621
-        Santiago Martinez Ricardo          - 
+        Santiago Martinez Ricardo          - 318187251
 
     Asignatura:                     Ciclo escolar:
 
@@ -69,9 +69,15 @@ LISTA* listas[10];
 
 // Encabezado de funciones
 LISTA* crearLista(int clase);
+NODO* crearNodo(char* cad, int valor);
+int esVacia(LISTA* lista);
+void agregarEntrada(LISTA* lista, char* cad);
+void imprimirLista(LISTA* lista);
 void generarTablas();
 void imprimirTablas();
 void buscaNombre(int clase);
+void liberarMemoria();
+void vaciarLista(LISTA* lista);
 
 
 %}
@@ -111,6 +117,7 @@ main()
     imprimirTablas();
     yylex();
     printf("\n");
+    liberarMemoria();
     return 0;
 }
 
@@ -124,14 +131,51 @@ LISTA* crearLista(int clase)
 }
 
 // Almacena espacio para un nodo
-NODO* crearNodo(char* cad, int valor, NODO* siguiente)
+NODO* crearNodo(char* cad, int valor)
 {
 
-    NODO* nuevo_nodo  = (NODO*) malloc(sizeof(NODO));
-    nuevo_nodo -> cad = cad;
-    nuevo_nodo -> valor = valor;
-    nuevo_nodo -> siguiente = siguiente;
+    NODO* nuevo_nodo  = (NODO*) malloc(sizeof(NODO)); // Reserva memoria
+    nuevo_nodo -> cad = cad; // Coloca simbolo
+    nuevo_nodo -> valor = valor; // Indica valor correspondiente
+    nuevo_nodo -> siguiente = NULL;
     return nuevo_nodo;  
+
+}
+
+// Determina si la lista cuenta con elementos
+int esVacia(LISTA* lista)
+{
+    if(lista -> head == NULL)
+        return 1;
+    
+    return 0;
+}
+
+// Agrega una entrada a la tabla
+void agregarEntrada(LISTA* lista, char* cad)
+{
+    int valor = 0;
+
+    // Caso para lista vacia
+    if(esVacia(lista))
+    {
+        lista -> head = crearNodo(cad, valor);
+    }
+    else
+    {
+        // Nodo auxiliar el recorrido
+        NODO* nodo_aux = lista -> head;
+        
+        // Por cada elemento recorrido, el valor en la tabla aumenta
+        valor++;
+
+        // Recorre hasta el ultimo elemento
+        for(; nodo_aux -> siguiente != NULL; nodo_aux = nodo_aux -> siguiente)
+            valor++;
+
+        // Se coloca el nodo cuando se llega el final
+        nodo_aux -> siguiente = crearNodo(cad, valor);
+    }
 
 }
 
@@ -144,20 +188,97 @@ void generarTablas()
         listas[i] = crearLista(i);
     }
 
+    // Agregado de elementos en la tabla 0
+    agregarEntrada(listas[0], "+");
+    agregarEntrada(listas[0], "-");
+    agregarEntrada(listas[0], "/");
+    agregarEntrada(listas[0], "*");
+    agregarEntrada(listas[0], "%");
 
+    // Agregado de elementos en la tabla 1
+    agregarEntrada(listas[1], "&&");
+    agregarEntrada(listas[1], "||");
+    agregarEntrada(listas[1], "!");
+
+    // Agregado de elementos en la tabla 2
+    agregarEntrada(listas[2], "==");
+    agregarEntrada(listas[2], "!=");
+    agregarEntrada(listas[2], ">");
+    agregarEntrada(listas[2], "<");
+    agregarEntrada(listas[2], ">=");
+    agregarEntrada(listas[2], "<=");
+
+    // Agregado de elementos en la tabla 4
+    agregarEntrada(listas[4], "assinado");
+    agregarEntrada(listas[4], "caso");
+    agregarEntrada(listas[4], "enquanto");
+    agregarEntrada(listas[4], "fazer");
+    agregarEntrada(listas[4], "flutuador");
+    agregarEntrada(listas[4], "inteiro");
+    agregarEntrada(listas[4], "para");
+    agregarEntrada(listas[4], "quebrar");
+    agregarEntrada(listas[4], "retorno");
+    agregarEntrada(listas[4], "se");
+    agregarEntrada(listas[4], "trocar");
+
+    // Agregado de elementos en la tabla 6
+    agregarEntrada(listas[6], "(");
+    agregarEntrada(listas[6], ")");
+    agregarEntrada(listas[6], "{");
+    agregarEntrada(listas[6], "}");
+    agregarEntrada(listas[6], ";");
+    agregarEntrada(listas[6], ",");
+    agregarEntrada(listas[6], "[");
+    agregarEntrada(listas[6], "]");
+    agregarEntrada(listas[6], ":");
+    agregarEntrada(listas[6], "*");
+
+    // Agregado de elementos en la tabla 7
+    agregarEntrada(listas[7], "=");
+    agregarEntrada(listas[7], "+=");
+    agregarEntrada(listas[7], "-=");
+    agregarEntrada(listas[7], "*=");
+    agregarEntrada(listas[7], "/=");
+    agregarEntrada(listas[7], "%=");
+
+    // Agregado de elementos en la tabla 9
+    agregarEntrada(listas[9], "$");
+    agregarEntrada(listas[9], "like");
 }
 
 // Coloca todas las tablas en su estado inicial
 void imprimirTablas()
 {
 
+    // Recore el arreglo de listas para imprimirlas
     for(int i = 0; i < 10; i++)
     {
         LISTA* aux = listas[i];
         printf("\nTabla %i - ", aux -> clase);
         buscaNombre(aux -> clase);
+        printf("Valor\tSimbolo\n");
+        imprimirLista(listas[i]);
     }
 
+}
+
+// Impreme todos los nodos de una lista
+void imprimirLista(LISTA* lista)
+{
+    // Se omiten las listas sin elementos
+    if(esVacia(lista))
+        return;
+    
+    // Si hay almenos uno, se continua
+    NODO* nodo_aux = lista -> head;
+    
+    // Imprime el valor de cada nodo y se recorre
+    while(nodo_aux != NULL)
+    {
+        printf("%i\t%s\n", nodo_aux -> valor, nodo_aux -> cad);
+        nodo_aux = nodo_aux -> siguiente;
+    }
+        
 }
 
 // Imprime cadena correspondiente a tabla
@@ -197,3 +318,33 @@ void buscaNombre(int clase)
             break;
     }    
 }
+
+// Libera la memoria reservada para el programa
+void liberarMemoria()
+{
+    // Recorre el arreglo de listas
+    for (int i = 0; i < 10; i++)
+    {
+        // Libera todos los nodos
+        vaciarLista(listas[i]);
+        // Libera el espacio de la lista
+        free(listas[i]);
+        // Pierde al referencia
+        listas[i] = NULL;
+    }
+}
+
+// Elimina todos los nodos de una lista
+void vaciarLista(LISTA* lista)                            
+{
+    NODO* kamikaze = lista -> head;             // Se posiciona al inicio de la lista   
+    
+    while (kamikaze != NULL)                    // Continuara mientras haya nodos en la lista
+    {
+        lista -> head = kamikaze -> siguiente;  // Se desplaza el inicio de la lista
+        kamikaze -> siguiente = NULL;           // Se pierde la referencia a la lista
+        free(kamikaze);                         // Se libera el espacio reservado
+        kamikaze = lista -> head;               // Regresamos al inicio de la lista        
+    };
+};
+
