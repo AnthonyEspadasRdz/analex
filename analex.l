@@ -23,9 +23,9 @@
 #include <string.h>
 
 // Archivos para indicar estado del analisis
-FILE* salida;
-FILE* errores;
-FILE* tablas;
+FILE* salida;  // Archivo con los tokens generados
+FILE* errores; // Registro de errores encontrados
+FILE* tablas;  // Visualiza el estado final de las tablas
 
 // Alias de tipo para las estructuras usadas
 typedef struct _token TOKEN;
@@ -34,21 +34,21 @@ typedef struct _lista LISTA;
 
 // Estructura generada al identificar un componente lexico valido
 struct _token{
-    int clase;
-    int valor;
+    int clase; // Tipo de tabla a la que pertenece
+    int valor; // Posicion que ocupa en la tabla
 };
 
 // Estructura para guardar valores en las tablas
 struct _nodo{
-    char* cad;
-    int valor;
-    NODO* siguiente;
+    char* cad; // Simbolo que representa
+    int valor; // Posicion en la tabla
+    NODO* siguiente; // Apuntado al siguiente elemento
 };
 
 // Estructura para generar las tablas
 struct _lista{
-    int clase;
-    NODO* head;
+    int clase;  // Clase de elementos que contiene
+    NODO* head; // Primer elemento de la tabla
 };
 
 // Variables de apoyo en la ejecucion
@@ -99,25 +99,33 @@ opcad   &|like
 opasig  {oparit}?=
 
 %%
-{oparit}    {printf("\n%s - Clase 0, operador aritmetico", yytext);}
-{oplog}     {printf("\n%s - Clase 1, operador logico", yytext);}
-{oprel}     {printf("\n%s - Clase 2, operador relacional", yytext);}
-{consnum}   {printf("\n%s - Clase 3, constante numerica entera", yytext);}
-{palres}    {printf("\n%s - Clase 4, palabra reservada", yytext);}
-{ident}     {printf("\n%s - Clase 5, identificador", yytext);}
-{simbesp}   {printf("\n%s - Clase 6, simbolo especial", yytext);}
-{opasig}    {printf("\n%s - Clase 7, operdador de asignacion", yytext);}
-{cadena}    {printf("\n%s - Clase 8, constante cadena", yytext);}
-{opcad}     {printf("\n%s - Clase 9, operador de cadenas", yytext);}
+{oparit}    {fprintf(salida,"\n%s - Clase 0, operador aritmetico", yytext);}
+{oplog}     {fprintf(salida,"\n%s - Clase 1, operador logico", yytext);}
+{oprel}     {fprintf(salida,"\n%s - Clase 2, operador relacional", yytext);}
+{consnum}   {fprintf(salida,"\n%s - Clase 3, constante numerica entera", yytext);}
+{palres}    {fprintf(salida,"\n%s - Clase 4, palabra reservada", yytext);}
+{ident}     {fprintf(salida,"\n%s - Clase 5, identificador", yytext);}
+{simbesp}   {fprintf(salida,"\n%s - Clase 6, simbolo especial", yytext);}
+{opasig}    {fprintf(salida,"\n%s - Clase 7, operdador de asignacion", yytext);}
+{cadena}    {fprintf(salida,"\n%s - Clase 8, constante cadena", yytext);}
+{opcad}     {fprintf(salida,"\n%s - Clase 9, operador de cadenas", yytext);}
 %%
 
 main()
 {
+    // Abre flujo de datos
+    salida = fopen("salida.txt", "w"); 
+    // Coloca tabla en estado iniciañ
     generarTablas();
-    imprimirTablas();
+    // Inicia analis lexico
     yylex();
+    // Guarda el estado final de las tablas
+    imprimirTablas();
     printf("\n");
+    // Libera el espacio usado
     liberarMemoria();
+    // Cierra el flujo de datos
+    fclose(salida);
     return 0;
 }
 
@@ -249,17 +257,24 @@ void generarTablas()
 // Coloca todas las tablas en su estado inicial
 void imprimirTablas()
 {
+    // Abrimos flujo de datos
+    tablas = fopen("tablas.txt","w");
 
     // Recore el arreglo de listas para imprimirlas
     for(int i = 0; i < 10; i++)
     {
+        // Tomamos la tabla
         LISTA* aux = listas[i];
-        printf("\nTabla %i - ", aux -> clase);
+        // Imprimimos su encabezado
+        fprintf(tablas,"\nTabla %i - ", aux -> clase);
         buscaNombre(aux -> clase);
-        printf("Valor\tSimbolo\n");
+        fprintf(tablas,"Valor\tSimbolo\n");
+        // Imprimimos sus elementos
         imprimirLista(listas[i]);
     }
 
+    // Cerramos flujo de datoss
+    fclose(tablas);
 }
 
 // Impreme todos los nodos de una lista
@@ -275,7 +290,7 @@ void imprimirLista(LISTA* lista)
     // Imprime el valor de cada nodo y se recorre
     while(nodo_aux != NULL)
     {
-        printf("%i\t%s\n", nodo_aux -> valor, nodo_aux -> cad);
+        fprintf(tablas,"%i\t\t%s\n", nodo_aux -> valor, nodo_aux -> cad);
         nodo_aux = nodo_aux -> siguiente;
     }
         
@@ -287,34 +302,34 @@ void buscaNombre(int clase)
     switch(clase)
     {
         case 0:
-            printf("Operadores aritmeticos\n");
+            fprintf(tablas,"Operadores aritmeticos\n");
             break;
         case 1:
-            printf("Operadores logicos\n");
+            fprintf(tablas,"Operadores logicos\n");
             break;
         case 2:
-            printf("Operadores relacionales\n");
+            fprintf(tablas,"Operadores relacionales\n");
             break;
         case 3:
-            printf("Constantes numericas enteras\n");
+            fprintf(tablas,"Constantes numericas enteras\n");
             break;
         case 4:
-            printf("Palabras reservadas\n");
+            fprintf(tablas,"Palabras reservadas\n");
             break;
         case 5:
-            printf("Identificadores\n");
+            fprintf(tablas,"Identificadores\n");
             break;
         case 6:
-            printf("Simbolos especiales\n");
+            fprintf(tablas,"Simbolos especiales\n");
             break;
         case 7:
-            printf("Operadores de asugnacion\n");
+            fprintf(tablas,"Operadores de asugnacion\n");
             break;
         case 8:
-            printf("Constantes cadenas\n");
+            fprintf(tablas,"Constantes cadenas\n");
             break;
         case 9:
-            printf("Operadores sobre cadenas\n");
+            fprintf(tablas,"Operadores sobre cadenas\n");
             break;
     }    
 }
