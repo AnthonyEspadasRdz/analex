@@ -124,37 +124,157 @@ opcad   &|like
 opasig  {oparit}?=
 
 %%
-{oparit}    {fprintf(salida,"\n%s - Clase 0, operador aritmetico", yytext);}
+{oparit}    {fprintf(salida,"\n%s - Clase 0, operador aritmetico", yytext);
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                    
+                                    // Copia de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
 
-{oplog}     {fprintf(salida,"\n%s - Clase 1, operador logico", yytext);}
+                                    // Se genera token con el ascii leido
+                                    generarToken(0, (int) *c_aux);}
 
-{oprel}     {fprintf(salida,"\n%s - Clase 2, operador relacional", yytext);}
+{oplog}     {fprintf(salida,"\n%s - Clase 1, operador logico", yytext);
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                   
+                                    // Copia de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
+                                   
+                                    // Encuentra velor del identificador en la tabla
+                                    int val = encontrarValor(listas[1], c_aux);
+                                   
+                                    // Genera token usando valor
+                                    generarToken(1,val);}
 
-{consnum}   {fprintf(salida,"\n%s - Clase 3, constante numerica entera", yytext);}
+{oprel}     {fprintf(salida,"\n%s - Clase 2, operador relacional", yytext);
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                   
+                                    // Copia de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
+                                   
+                                    // Encuentra velor del identificador en la tabla
+                                    int val = encontrarValor(listas[2], c_aux);
+                                   
+                                    // Genera token usando valor
+                                    generarToken(2,val);}
 
-{palres}    {fprintf(salida,"\n%s - Clase 4, palabra reservada", yytext);}
+{consnum}   {fprintf(salida,"\n%s - Clase 3, constante numerica entera", yytext);
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                    
+                                    // Copie de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
+                                    
+                                    // Verifica si es signado
+                                    if(c_aux[0] == '(')
+                                    {   
+                                        // Omite el primer parentesis
+                                        c_aux[0] = c_aux[1];
+                                        c_aux[1] = '0';
+
+                                        // Si es positivo, omite el signo
+                                        if(c_aux[0] == '+')
+                                            c_aux[0] = '0';
+                                        
+                                        // Omite el segundo parentesis
+                                        c_aux[yyleng-1] = '.';
+                                    }
+                                    
+                                    // Genera el token usando la cadena
+                                    generarToken(3, atoi(c_aux));}
+
+{palres}    {fprintf(salida,"\n%s - Clase 4, palabra reservada", yytext);
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                   
+                                    // Copia de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
+                                   
+                                    // Encuentra velor del identificador en la tabla
+                                    int val = encontrarValor(listas[4], c_aux);
+                                   
+                                    // Genera token usando valor
+                                    generarToken(4,val);}
 
 {ident}     {fprintf(salida,"\n%s - Clase 5, identificador", yytext);
+                                   // Cadena auxiliar para validar entrada
                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                   
+                                   // Copia de entrada a cadena
                                    strncpy(c_aux, yytext, yyleng);
                                    c_aux[yyleng] = '\0';
+                                   
+                                   // Verifica si el identificador existe
                                    verificarEntrada(listas[5], c_aux);
+
+                                   // Encuentra velor del identificador en la tabla
                                    int val = encontrarValor(listas[5], c_aux);
+                                   
+                                   // Genera token usando valor
                                    generarToken(5,val);}
 
-{simbesp}   {fprintf(salida,"\n%s - Clase 6, simbolo especial", yytext);}
+{simbesp}   {fprintf(salida,"\n%s - Clase 6, simbolo especial", yytext);
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                    
+                                    // Copia de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
+                                    
+                                    // Se genera token con el ascii leido
+                                    generarToken(6, (int) *c_aux);}
 
-{opasig}    {fprintf(salida,"\n%s - Clase 7, operdador de asignacion", yytext);}
+{opasig}    {fprintf(salida,"\n%s - Clase 7, operdador de asignacion", yytext);
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                   
+                                    // Copia de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
+                                   
+                                    // Encuentra velor del identificador en la tabla
+                                    int val = encontrarValor(listas[7], c_aux);
+                                   
+                                    // Genera token usando valor
+                                    generarToken(7,val);}
 
 {cadena}    {fprintf(salida,"\n%s - Clase 8, constante cadena", yytext);
-                                   char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                   strncpy(c_aux, yytext, yyleng);
-                                   c_aux[yyleng] = '\0';
-                                   agregarEntrada(listas[8], c_aux);
-                                   generarToken(8,contador_cadenas);
-                                   contador_cadenas++;}
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                    
+                                    // Copia de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
+                                    
+                                    // Se agrega la cadena a la tabla
+                                    agregarEntrada(listas[8], c_aux);
+                                    
+                                    // Se genera el token para su referencia
+                                    generarToken(8,contador_cadenas);
+                                    
+                                    // El contador de cadenas aumetna
+                                    contador_cadenas++;}
 
-{opcad}     {fprintf(salida,"\n%s - Clase 9, operador de cadenas", yytext);}
+{opcad}     {fprintf(salida,"\n%s - Clase 9, operador de cadenas", yytext);
+                                    // Cadena auxiliar para validar entrada
+                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                   
+                                    // Copia de entrada a cadena
+                                    strncpy(c_aux, yytext, yyleng);
+                                    c_aux[yyleng] = '\0';
+                                   
+                                    // Encuentra velor del identificador en la tabla
+                                    int val = encontrarValor(listas[9], c_aux);
+                                   
+                                    // Genera token usando valor
+                                    generarToken(9,val);}
 
 {espacio}   { }
 .           {fprintf(errores,"Elemento no reconocido: %s\n", yytext);}
@@ -358,13 +478,6 @@ void generarTablas()
         listas[i] = crearLista(i);
     }
 
-    // Agregado de elementos en la tabla 0
-    agregarEntrada(listas[0], "+");
-    agregarEntrada(listas[0], "-");
-    agregarEntrada(listas[0], "/");
-    agregarEntrada(listas[0], "*");
-    agregarEntrada(listas[0], "%");
-
     // Agregado de elementos en la tabla 1
     agregarEntrada(listas[1], "&&");
     agregarEntrada(listas[1], "||");
@@ -391,18 +504,6 @@ void generarTablas()
     agregarEntrada(listas[4], "se");
     agregarEntrada(listas[4], "trocar");
 
-    // Agregado de elementos en la tabla 6
-    agregarEntrada(listas[6], "(");
-    agregarEntrada(listas[6], ")");
-    agregarEntrada(listas[6], "{");
-    agregarEntrada(listas[6], "}");
-    agregarEntrada(listas[6], ";");
-    agregarEntrada(listas[6], ",");
-    agregarEntrada(listas[6], "[");
-    agregarEntrada(listas[6], "]");
-    agregarEntrada(listas[6], ":");
-    agregarEntrada(listas[6], "*");
-
     // Agregado de elementos en la tabla 7  
     agregarEntrada(listas[7], "=");
     agregarEntrada(listas[7], "+=");
@@ -412,7 +513,7 @@ void generarTablas()
     agregarEntrada(listas[7], "%=");
 
     // Agregado de elementos en la tabla 9
-    agregarEntrada(listas[9], "$");
+    agregarEntrada(listas[9], "&");
     agregarEntrada(listas[9], "like");
 }
 
@@ -425,6 +526,10 @@ void imprimirTablas()
     // Recore el arreglo de listas para imprimirlas
     for(int i = 0; i < 10; i++)
     {
+        // Omitimos las clases sin registros
+        if (i == 0|i == 3|i == 6)
+            continue;
+
         // Tomamos la tabla
         LISTA* aux = listas[i];
         
@@ -465,26 +570,17 @@ void buscaNombre(int clase)
 {
     switch(clase)
     {
-        case 0:
-            fprintf(tablas,"Operadores aritmeticos\n");
-            break;
         case 1:
             fprintf(tablas,"Operadores logicos\n");
             break;
         case 2:
             fprintf(tablas,"Operadores relacionales\n");
             break;
-        case 3:
-            fprintf(tablas,"Constantes numericas enteras\n");
-            break;
         case 4:
             fprintf(tablas,"Palabras reservadas\n");
             break;
         case 5:
             fprintf(tablas,"Identificadores\n");
-            break;
-        case 6:
-            fprintf(tablas,"Simbolos especiales\n");
             break;
         case 7:
             fprintf(tablas,"Operadores de asignacion\n");
