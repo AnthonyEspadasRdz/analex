@@ -124,7 +124,7 @@ opcad   &|like
 opasig  {oparit}?=
 
 %%
-{oparit}    {fprintf(salida,"\n%s - Clase 0, operador aritmetico", yytext);
+{oparit}    {fprintf(salida,"\n%s  ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                     
@@ -133,9 +133,12 @@ opasig  {oparit}?=
                                     c_aux[yyleng] = '\0';
 
                                     // Se genera token con el ascii leido
-                                    generarToken(0, (int) *c_aux);}
+                                    generarToken(0, (int) *c_aux);
+                                    
+                                    // Se visualiza el valor en la salida
+                                    fprintf(salida,"(0, %i)", (int) *c_aux);}
 
-{oplog}     {fprintf(salida,"\n%s - Clase 1, operador logico", yytext);
+{oplog}     {fprintf(salida,"\n%s  ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                    
@@ -147,9 +150,12 @@ opasig  {oparit}?=
                                     int val = encontrarValor(listas[1], c_aux);
                                    
                                     // Genera token usando valor
-                                    generarToken(1,val);}
+                                    generarToken(1,val);
+                                    
+                                    // Se visualiza el valor en la salida
+                                    fprintf(salida,"(1, %i)", val);}
 
-{oprel}     {fprintf(salida,"\n%s - Clase 2, operador relacional", yytext);
+{oprel}     {fprintf(salida,"\n%s  ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                    
@@ -161,9 +167,12 @@ opasig  {oparit}?=
                                     int val = encontrarValor(listas[2], c_aux);
                                    
                                     // Genera token usando valor
-                                    generarToken(2,val);}
+                                    generarToken(2,val);
+                                    
+                                    // Se visualiza el valor en la salida
+                                    fprintf(salida,"(2, %i)", val);}
 
-{consnum}   {fprintf(salida,"\n%s - Clase 3, constante numerica entera", yytext);
+{consnum}   {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                     
@@ -187,9 +196,12 @@ opasig  {oparit}?=
                                     }
                                     
                                     // Genera el token usando la cadena
-                                    generarToken(3, atoi(c_aux));}
+                                    generarToken(3, atoi(c_aux));
+                                    
+                                    // Se visualiza el valor en la salida
+                                    fprintf(salida,"(3, %i)", atoi(c_aux));}
 
-{palres}    {fprintf(salida,"\n%s - Clase 4, palabra reservada", yytext);
+{palres}    {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                    
@@ -201,9 +213,10 @@ opasig  {oparit}?=
                                     int val = encontrarValor(listas[4], c_aux);
                                    
                                     // Genera token usando valor
-                                    generarToken(4,val);}
+                                    generarToken(4,val);
+                                    fprintf(salida,"(4, %i)", val);}
 
-{ident}     {fprintf(salida,"\n%s - Clase 5, identificador", yytext);
+{ident}     {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                    // Cadena auxiliar para validar entrada
                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                    
@@ -218,9 +231,12 @@ opasig  {oparit}?=
                                    int val = encontrarValor(listas[5], c_aux);
                                    
                                    // Genera token usando valor
-                                   generarToken(5,val);}
+                                   generarToken(5,val);
+                                   
+                                   // Se visualiza el valor en la salida
+                                    fprintf(salida,"(5, %i)", val);}
 
-{simbesp}   {fprintf(salida,"\n%s - Clase 6, simbolo especial", yytext);
+{simbesp}   {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                     
@@ -229,9 +245,12 @@ opasig  {oparit}?=
                                     c_aux[yyleng] = '\0';
                                     
                                     // Se genera token con el ascii leido
-                                    generarToken(6, (int) *c_aux);}
+                                    generarToken(6, (int) *c_aux);
+                                    
+                                    // Se visualiza el valor en la salida
+                                    fprintf(salida,"(6, %i)", (int) *c_aux);}
 
-{opasig}    {fprintf(salida,"\n%s - Clase 7, operdador de asignacion", yytext);
+{opasig}    {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                    
@@ -243,9 +262,12 @@ opasig  {oparit}?=
                                     int val = encontrarValor(listas[7], c_aux);
                                    
                                     // Genera token usando valor
-                                    generarToken(7,val);}
+                                    generarToken(7,val);
+                                    
+                                    // Se visualiza el valor en la salida
+                                    fprintf(salida,"(7, %i)", val);}
 
-{cadena}    {fprintf(salida,"\n%s - Clase 8, constante cadena", yytext);
+{cadena}    {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                     
@@ -257,12 +279,15 @@ opasig  {oparit}?=
                                     agregarEntrada(listas[8], c_aux);
                                     
                                     // Se genera el token para su referencia
-                                    generarToken(8,contador_cadenas);
+                                    generarToken(8, contador_cadenas);
                                     
+                                    // Se visualiza el valor en la salida
+                                    fprintf(salida,"(8, %i)", contador_cadenas);
+
                                     // El contador de cadenas aumetna
                                     contador_cadenas++;}
 
-{opcad}     {fprintf(salida,"\n%s - Clase 9, operador de cadenas", yytext);
+{opcad}     {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
                                     char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                    
@@ -274,7 +299,10 @@ opasig  {oparit}?=
                                     int val = encontrarValor(listas[9], c_aux);
                                    
                                     // Genera token usando valor
-                                    generarToken(9,val);}
+                                    generarToken(9,val);
+                                    
+                                    // Se visualiza el valor en la salida
+                                    fprintf(salida,"(9, %i)", val);}
 
 {espacio}   { }
 .           {fprintf(errores,"Elemento no reconocido: %s\n", yytext);}
