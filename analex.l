@@ -36,28 +36,29 @@ typedef struct _lista_T LISTA_T;
 
 // Estructura generada al identificar un componente lexico valido
 struct _token{
-    int clase; // Tipo de tabla a la que pertenece
-    int valor; // Posicion que ocupa en la tabla
-    TOKEN* siguiente; // Siguiente token en orden
+    int clase;       // Tipo de tabla a la que pertenece
+    int valor;       // Posicion que ocupa en la tabla
+    TOKEN* siguiente;// Siguiente token en orden
 };
 
 // Estructura para guardar valores en las tablas
 struct _nodo{
-    char* cad; // Simbolo que representa
-    int valor; // Posicion en la tabla
-    NODO* siguiente; // Apuntado al siguiente elemento
+    char* cad;      // Simbolo que representa
+    int valor;      // Posicion en la tabla
+    int tipo;       // Determina el tipo cuando se guardan identificadores
+    NODO* siguiente;// Apuntado al siguiente elemento
 };
 
 // Estructura para generar las tablas
 struct _lista{
-    int clase;  // Clase de elementos que contiene
-    NODO* head; // Primer elemento de la tabla
+    int clase;      // Clase de elementos que contiene
+    NODO* head;     // Primer elemento de la tabla
 };
 
 // Estructura para almacenar los tokens
 struct _lista_T {
-    TOKEN* head; // Apunta el primer token
-    TOKEN* tail; // Apunta al ultimo token
+    TOKEN* head;    // Apunta el primer token
+    TOKEN* tail;    // Apunta al ultimo token
 };
 
 // Arreglo que guarda las tablas generadas
@@ -305,7 +306,8 @@ opasig  {oparit}?=
                                     fprintf(salida,"(9, %i)", val);}
 
 {espacio}   { }
-.           {fprintf(errores,"Elemento no reconocido: %s\n", yytext);}
+.           {fprintf(salida,"\n%s ==> Elemento no reconocido", yytext);
+             fprintf(errores,"Elemento no reconocido: %s\n", yytext);}
 
 %%
 
@@ -362,6 +364,7 @@ NODO* crearNodo(char* cad, int valor)
     NODO* nuevo_nodo  = (NODO*) malloc(sizeof(NODO)); // Reserva memoria
     nuevo_nodo -> cad = cad; // Coloca simbolo
     nuevo_nodo -> valor = valor; // Indica valor correspondiente
+    nuevo_nodo -> tipo = -1; // Se coloca el valor por defecto del tipo
     nuevo_nodo -> siguiente = NULL;
     return nuevo_nodo;  
 }
@@ -564,8 +567,15 @@ void imprimirTablas()
         // Imprimimos su encabezado
         fprintf(tablas,"\nTabla %i - ", aux -> clase);
         buscaNombre(aux -> clase);
-        fprintf(tablas,"Valor\tSimbolo\n");
-        
+        fprintf(tablas,"Valor\tSimbolo");
+
+        // La tabla 5 tambien muestra el tipo de identificador
+        if (i == 5)
+            fprintf(tablas,"\t\tTipo");
+
+        // Fin de los encabezados
+        fprintf(tablas,"\n");
+
         // Imprimimos sus elementos
         imprimirLista(listas[i]);
     }
@@ -587,10 +597,17 @@ void imprimirLista(LISTA* lista)
     // Imprime el valor de cada nodo y se recorre
     while(nodo_aux != NULL)
     {
-        fprintf(tablas,"%i\t\t%s\n", nodo_aux -> valor, nodo_aux -> cad);
+        fprintf(tablas,"%i\t\t%s", nodo_aux -> valor, nodo_aux -> cad);
+
+        // Para la tabla 5 tambien se imprime el tipo
+        if (lista -> clase == 5)
+            fprintf(tablas,"\t\t%i", nodo_aux -> tipo);
+
+        // Fin de la linea
+        fprintf(tablas,"\n");
+
         nodo_aux = nodo_aux -> siguiente;
-    }
-        
+    }        
 }
 
 // Imprime cadena correspondiente a tabla
@@ -684,8 +701,8 @@ void vaciarLista(LISTA* lista)
         
         // Regresamos al inicio de la lista
         kamikaze = lista -> head;                       
-    };
-};
+    }
+}
 
 // Libera el espacio reservado para los tokens
 void vaciarTokens()
@@ -712,4 +729,4 @@ void vaciarTokens()
     // Delvemos la lista al estado inicial
     tokens_L -> head = NULL;
     tokens_L -> tail = NULL;
-};
+}
