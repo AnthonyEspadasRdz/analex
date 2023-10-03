@@ -86,6 +86,7 @@ TOKEN* crearToken(int clase, int valor);
 
 int esVacia(LISTA* lista);
 void buscaNombre(int clase);
+char* copiarCadena(char* yytext, int yyleng);
 
 void agregarEntrada(LISTA* lista, char* cad);
 
@@ -127,11 +128,7 @@ opasig  {oparit}?=
 %%
 {oparit}    {fprintf(salida,"\n%s  ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                    
-                                    // Copia de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
+                                    char* c_aux = copiarCadena(yytext, yyleng);
 
                                     // Se genera token con el ascii leido
                                     generarToken(0, (int) *c_aux);
@@ -141,15 +138,11 @@ opasig  {oparit}?=
 
 {oplog}     {fprintf(salida,"\n%s  ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                   
-                                    // Copia de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
-                                   
+                                    char* c_aux = copiarCadena(yytext, yyleng);
+
                                     // Encuentra velor del identificador en la tabla
                                     int val = encontrarValor(listas[1], c_aux);
-                                   
+                                    
                                     // Genera token usando valor
                                     generarToken(1,val);
                                     
@@ -158,11 +151,7 @@ opasig  {oparit}?=
 
 {oprel}     {fprintf(salida,"\n%s  ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                   
-                                    // Copia de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
+                                    char* c_aux = copiarCadena(yytext, yyleng);
                                    
                                     // Encuentra velor del identificador en la tabla
                                     int val = encontrarValor(listas[2], c_aux);
@@ -175,11 +164,7 @@ opasig  {oparit}?=
 
 {consnum}   {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                    
-                                    // Copie de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
+                                    char* c_aux = copiarCadena(yytext, yyleng);
                                     
                                     // Verifica si es signado
                                     if(c_aux[0] == '(')
@@ -204,11 +189,7 @@ opasig  {oparit}?=
 
 {palres}    {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                   
-                                    // Copia de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
+                                    char* c_aux = copiarCadena(yytext, yyleng);
                                    
                                     // Encuentra velor del identificador en la tabla
                                     int val = encontrarValor(listas[4], c_aux);
@@ -219,11 +200,7 @@ opasig  {oparit}?=
 
 {ident}     {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                    // Cadena auxiliar para validar entrada
-                                   char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                   
-                                   // Copia de entrada a cadena
-                                   strncpy(c_aux, yytext, yyleng);
-                                   c_aux[yyleng] = '\0';
+                                   char* c_aux = copiarCadena(yytext, yyleng);
                                    
                                    // Verifica si el identificador existe
                                    verificarEntrada(listas[5], c_aux);
@@ -239,11 +216,7 @@ opasig  {oparit}?=
 
 {simbesp}   {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                    
-                                    // Copia de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
+                                    char* c_aux = copiarCadena(yytext, yyleng);
                                     
                                     // Se genera token con el ascii leido
                                     generarToken(6, (int) *c_aux);
@@ -253,11 +226,7 @@ opasig  {oparit}?=
 
 {opasig}    {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                   
-                                    // Copia de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
+                                    char* c_aux = copiarCadena(yytext, yyleng);
                                    
                                     // Encuentra velor del identificador en la tabla
                                     int val = encontrarValor(listas[7], c_aux);
@@ -270,11 +239,7 @@ opasig  {oparit}?=
 
 {cadena}    {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                    
-                                    // Copia de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
+                                    char* c_aux = copiarCadena(yytext, yyleng);
                                     
                                     // Se agrega la cadena a la tabla
                                     agregarEntrada(listas[8], c_aux);
@@ -290,11 +255,7 @@ opasig  {oparit}?=
 
 {opcad}     {fprintf(salida,"\n%s ==> genera token ==> ", yytext);
                                     // Cadena auxiliar para validar entrada
-                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
-                                   
-                                    // Copia de entrada a cadena
-                                    strncpy(c_aux, yytext, yyleng);
-                                    c_aux[yyleng] = '\0';
+                                    char* c_aux = copiarCadena(yytext, yyleng);
                                    
                                     // Encuentra velor del identificador en la tabla
                                     int val = encontrarValor(listas[9], c_aux);
@@ -334,7 +295,7 @@ main()
     // Guarda la secuencia de tokens en un archivo
     imprimirTokens();
     printf("\n");
-    
+
     // Libera el espacio usado
     liberarMemoria();
     
@@ -377,6 +338,21 @@ TOKEN* crearToken(int clase, int valor)
     nuevo_token -> valor = valor;
     nuevo_token -> siguiente = NULL;
     return nuevo_token;
+}
+
+// Cadena que copia la cadena apuntada por yytext para validaciones
+char* copiarCadena(char* yytext, int yyleng)
+{
+    // Reservamos memoria según el tamaño
+    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
+                                    
+    // Copiamos el valor
+    strncpy(c_aux, yytext, yyleng);
+    
+    // añadimos el fin de cadena
+    c_aux[yyleng] = '\0';
+
+    return c_aux;
 }
 
 // Agrega el token a la coleccion
@@ -548,7 +524,7 @@ void generarTablas()
     agregarEntrada(listas[9], "like");
 }
 
-// Coloca todas las tablas en su estado inicial
+// Coloca todas las tablas en un archivo
 void imprimirTablas()
 {
     // Abrimos flujo de datos
