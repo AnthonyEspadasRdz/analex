@@ -92,6 +92,7 @@ void verificarEntrada(LISTA* lista, char* cad);
 
 void generarToken(int clase, int valor);
 void generarTablas();
+int encontrarValor(LISTA* lista, char* cad);
 
 void imprimirTokens();
 void imprimirLista(LISTA* lista);
@@ -101,6 +102,8 @@ void liberarMemoria();
 void vaciarLista(LISTA* lista);
 void vaciarTokens();
 
+// Variables de apoyo
+int contador_cadenas = 0; 
 
 %}
 
@@ -136,7 +139,8 @@ opasig  {oparit}?=
                                    strncpy(c_aux, yytext, yyleng);
                                    c_aux[yyleng] = '\0';
                                    verificarEntrada(listas[5], c_aux);
-                                   generarToken(5,4);}
+                                   int val = encontrarValor(listas[5], c_aux);
+                                   generarToken(5,val);}
 
 {simbesp}   {fprintf(salida,"\n%s - Clase 6, simbolo especial", yytext);}
 
@@ -146,9 +150,14 @@ opasig  {oparit}?=
                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                    strncpy(c_aux, yytext, yyleng);
                                    c_aux[yyleng] = '\0';
-                                   agregarEntrada(listas[8], c_aux);}
+                                   agregarEntrada(listas[8], c_aux);
+                                   generarToken(8,contador_cadenas);
+                                   contador_cadenas++;}
 
 {opcad}     {fprintf(salida,"\n%s - Clase 9, operador de cadenas", yytext);}
+
+{espacio}   { }
+.           {fprintf(errores,"Elemento no reconocido: %s\n", yytext);}
 
 %%
 
@@ -160,7 +169,8 @@ main()
 
     // Abre flujo de datos
     salida = fopen("salida.txt", "w");
-    tokens = fopen("tokens.txt", "w"); 
+    tokens = fopen("tokens.txt", "w");
+    errores = fopen("errores.txt", "w"); 
 
     // Coloca tabla en estado inicial
     generarTablas();
@@ -181,6 +191,7 @@ main()
     // Cierra el flujo de datos
     fclose(salida);
     fclose(tokens);
+    fclose(errores);
 
     system("clear");
     printf("\nAnalisis terminao\n");
@@ -279,8 +290,11 @@ void verificarEntrada(LISTA* lista, char* cad)
 {
     // Una lista vacia no verifica
     if(esVacia(lista))
+    {
         agregarEntrada(lista, cad);
-    
+        return;
+    }
+
     // Bandera para verificar coincidencia
     int existe = 0;
     
@@ -482,6 +496,28 @@ void buscaNombre(int clase)
             fprintf(tablas,"Operadores sobre cadenas\n");
             break;
     }    
+}
+
+// Encuentra el valor de una entrada de la tabla
+int encontrarValor(LISTA* lista, char* cad)
+{
+    // Nodo de apoyo a las comparaciones
+    NODO* nodo_aux = lista -> head;
+
+    // Evita buscar en tablas vacias
+    if(nodo_aux == NULL)
+        return -1;
+    
+    while (nodo_aux != NULL)
+    {
+        if(!strcmp(nodo_aux -> cad, cad))
+            return nodo_aux -> valor;
+
+        nodo_aux = nodo_aux -> siguiente;
+    }
+
+    // No hubo coincidencias
+    return -1;
 }
 
 // Libera la memoria reservada para el programa
