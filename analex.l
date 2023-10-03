@@ -32,6 +32,7 @@ FILE* tokens;  // Muestra la entrada que genera los tokens
 typedef struct _token TOKEN;
 typedef struct _nodo NODO;
 typedef struct _lista LISTA;
+typedef struct _lista_T LISTA_T;
 
 // Estructura generada al identificar un componente lexico valido
 struct _token{
@@ -53,6 +54,12 @@ struct _lista{
     NODO* head; // Primer elemento de la tabla
 };
 
+// Estructura para almacenar los tokens
+struct _lista_T {
+    TOKEN* head; // Apunta el primer token
+    TOKEN* tail; // Apunta al ultimo token
+};
+
 // Arreglo que guarda las tablas generadas
 LISTA* listas[10];
 /*********************************
@@ -64,26 +71,35 @@ LISTA* listas[10];
  5 - Identificadores
  6 - Simbolos especiales
  7 - Operadores de asignacion
- 8 - Constantes cadenas
+ 8 - Constantes cadenas"
  9 - Operadores sobre cadenas
 *********************************/
 
 // Estructura que guarda los tokens generados
-TOKEN* tokens_L = NULL;
+LISTA_T* tokens_L;
 
-// Prototipo de funciones
+// Prototipos de funciones
 LISTA* crearLista(int clase);
 NODO* crearNodo(char* cad, int valor);
 TOKEN* crearToken(int clase, int valor);
+
 int esVacia(LISTA* lista);
-void agregarEntrada(LISTA* lista, char* cad);
-void verificarEntrada(LISTA* lista, char* cad);
-void imprimirLista(LISTA* lista);
-void generarTablas();
-void imprimirTablas();
 void buscaNombre(int clase);
+
+void agregarEntrada(LISTA* lista, char* cad);
+
+void verificarEntrada(LISTA* lista, char* cad);
+
+void generarToken(int clase, int valor);
+void generarTablas();
+
+void imprimirTokens();
+void imprimirLista(LISTA* lista);
+void imprimirTablas();
+
 void liberarMemoria();
 void vaciarLista(LISTA* lista);
+void vaciarTokens();
 
 
 %}
@@ -119,7 +135,8 @@ opasig  {oparit}?=
                                    char* c_aux = (char*) malloc(sizeof(char)*yyleng);
                                    strncpy(c_aux, yytext, yyleng);
                                    c_aux[yyleng] = '\0';
-                                   verificarEntrada(listas[5], c_aux);}
+                                   verificarEntrada(listas[5], c_aux);
+                                   generarToken(5,4);}
 
 {simbesp}   {fprintf(salida,"\n%s - Clase 6, simbolo especial", yytext);}
 
@@ -137,6 +154,10 @@ opasig  {oparit}?=
 
 main()
 {
+    // Se inicia la lista de tokens
+    tokens_L = (LISTA_T*) malloc(sizeof(LISTA_T));
+    tokens_L -> head = tokens_L -> tail = NULL;
+
     // Abre flujo de datos
     salida = fopen("salida.txt", "w");
     tokens = fopen("tokens.txt", "w"); 
@@ -149,6 +170,9 @@ main()
     
     // Guarda el estado final de las tablas
     imprimirTablas();
+
+    // Guarda la secuencia de tokens en un archivo
+    imprimirTokens();
     printf("\n");
     
     // Libera el espacio usado
@@ -156,7 +180,7 @@ main()
     
     // Cierra el flujo de datos
     fclose(salida);
-    fclose(tokens_F);
+    fclose(tokens);
 
     system("clear");
     printf("\nAnalisis terminao\n");
@@ -183,7 +207,7 @@ NODO* crearNodo(char* cad, int valor)
     return nuevo_nodo;  
 }
 
-// Genera el token a partir de los datos leidos
+// Reserva espaco para el token a partir de los datos leidos
 TOKEN* crearToken(int clase, int valor)
 {
     TOKEN* nuevo_token = (TOKEN*) malloc(sizeof(TOKEN));
@@ -191,6 +215,54 @@ TOKEN* crearToken(int clase, int valor)
     nuevo_token -> valor = valor;
     nuevo_token -> siguiente = NULL;
     return nuevo_token;
+}
+
+// Agrega el token a la coleccion
+void generarToken(int clase, int valor)
+{
+    // Reserva el espacio para los nuevos datos
+    TOKEN* token_aux = crearToken(clase, valor);
+    
+    // Cuando no hay tokens
+    if(tokens_L -> head == NULL)
+    {
+        // Se le colocan ambas referencias
+        tokens_L -> head = token_aux;
+        tokens_L -> tail = token_aux;
+    }
+    // Cuando hay un token
+    else if (tokens_L -> head == tokens_L -> tail)
+    {
+        // El nuevo token se mueve al final
+        tokens_L -> tail = token_aux;
+
+        // Se encadena con el inicio
+        tokens_L -> head -> siguiente = token_aux;
+    }
+    // Cuando hay 2 o mas tokens
+    else
+    {
+        // El nuevo token se mueve al final
+        tokens_L -> tail -> siguiente = token_aux;
+
+        // El nuevo token se mueve al final
+        tokens_L -> tail = token_aux;
+    }
+}
+
+// Guarda la secuencia de tokens en un archivo
+void imprimirTokens()
+{
+    // Nodo auxiliar que recorrera la lista
+    TOKEN* token_aux = tokens_L -> head;
+
+    // Se detiene al pasar todos los tokens
+    while(token_aux != NULL)
+    {
+        fprintf(tokens,"(%i, %i)\n", token_aux -> clase, token_aux -> valor);
+        fflush(tokens);
+        token_aux = token_aux -> siguiente;
+    }
 }
 
 // Determina si la lista cuenta con elementos
@@ -341,10 +413,12 @@ void imprimirTablas()
     {
         // Tomamos la tabla
         LISTA* aux = listas[i];
+        
         // Imprimimos su encabezado
         fprintf(tablas,"\nTabla %i - ", aux -> clase);
         buscaNombre(aux -> clase);
         fprintf(tablas,"Valor\tSimbolo\n");
+        
         // Imprimimos sus elementos
         imprimirLista(listas[i]);
     }
@@ -418,10 +492,15 @@ void liberarMemoria()
     {
         // Libera todos los nodos
         vaciarLista(listas[i]);
+        
         // Libera el espacio de la lista
         free(listas[i]);
+        
         // Pierde al referencia
         listas[i] = NULL;
+        
+        // Libera el espacio de los tokens
+        vaciarTokens();
     }
 }
 
@@ -436,12 +515,41 @@ void vaciarLista(LISTA* lista)
     {
         // Se desplaza el inicio de la lista
         lista -> head = kamikaze -> siguiente;  
+        
         // Se pierde la referencia a la lista
         kamikaze -> siguiente = NULL;           
+        
         // Se libera el espacio reservado
         free(kamikaze);                         
+        
         // Regresamos al inicio de la lista
         kamikaze = lista -> head;                       
     };
 };
 
+// Libera el espacio reservado para los tokens
+void vaciarTokens()
+{
+    // Nodo auxiliar que recorrera la lista
+    TOKEN* token_aux = tokens_L -> head; 
+
+    // Se detiene al pasar todos los tokens
+    while(token_aux != NULL)
+    {
+        // Desplazamos el incio de la lista
+        tokens_L -> head = token_aux -> siguiente;
+
+        // Perdemos la referenica del token
+        token_aux -> siguiente = NULL;
+
+        // Liberamos el espacio del token
+        free(token_aux);
+
+        // Se recorre el nodo auxiliar
+        token_aux = tokens_L -> head;
+    }
+
+    // Delvemos la lista al estado inicial
+    tokens_L -> head = NULL;
+    tokens_L -> tail = NULL;
+};
