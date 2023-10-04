@@ -34,11 +34,10 @@ typedef struct _nodo NODO;
 typedef struct _lista LISTA;
 typedef struct _lista_T LISTA_T;
 
-// Estructura generada al identificar un componente lexico valido
-struct _token{
-    int clase;       // Tipo de tabla a la que pertenece
-    int valor;       // Posicion que ocupa en la tabla
-    TOKEN* siguiente;// Siguiente token en orden
+// Estructura para generar las tablas
+struct _lista{
+    int clase;      // Clase de elementos que contiene
+    NODO* head;     // Primer elemento de la tabla
 };
 
 // Estructura para guardar valores en las tablas
@@ -49,16 +48,17 @@ struct _nodo{
     NODO* siguiente;// Apuntado al siguiente elemento
 };
 
-// Estructura para generar las tablas
-struct _lista{
-    int clase;      // Clase de elementos que contiene
-    NODO* head;     // Primer elemento de la tabla
-};
-
 // Estructura para almacenar los tokens
 struct _lista_T {
     TOKEN* head;    // Apunta el primer token
     TOKEN* tail;    // Apunta al ultimo token
+};
+
+// Estructura generada al identificar un componente lexico valido
+struct _token{
+    int clase;       // Tipo de tabla a la que pertenece
+    int valor;       // Posicion que ocupa en la tabla
+    TOKEN* siguiente;// Siguiente token en orden
 };
 
 // Arreglo que guarda las tablas generadas
@@ -78,6 +78,9 @@ LISTA* listas[10];
 
 // Estructura que guarda los tokens generados
 LISTA_T* tokens_L;
+
+// Variables de apoyo
+int contador_cadenas = 0;
 
 // Prototipos de funciones
 LISTA* crearLista(int clase);
@@ -102,10 +105,7 @@ void imprimirTablas();
 
 void liberarMemoria();
 void vaciarLista(LISTA* lista);
-void vaciarTokens();
-
-// Variables de apoyo
-int contador_cadenas = 0; 
+void vaciarTokens(); 
 
 %}
 
@@ -355,54 +355,6 @@ char* copiarCadena(char* yytext, int yyleng)
     return c_aux;
 }
 
-// Agrega el token a la coleccion
-void generarToken(int clase, int valor)
-{
-    // Reserva el espacio para los nuevos datos
-    TOKEN* token_aux = crearToken(clase, valor);
-    
-    // Cuando no hay tokens
-    if(tokens_L -> head == NULL)
-    {
-        // Se le colocan ambas referencias
-        tokens_L -> head = token_aux;
-        tokens_L -> tail = token_aux;
-    }
-    // Cuando hay un token
-    else if (tokens_L -> head == tokens_L -> tail)
-    {
-        // El nuevo token se mueve al final
-        tokens_L -> tail = token_aux;
-
-        // Se encadena con el inicio
-        tokens_L -> head -> siguiente = token_aux;
-    }
-    // Cuando hay 2 o mas tokens
-    else
-    {
-        // El nuevo token se mueve al final
-        tokens_L -> tail -> siguiente = token_aux;
-
-        // El nuevo token se mueve al final
-        tokens_L -> tail = token_aux;
-    }
-}
-
-// Guarda la secuencia de tokens en un archivo
-void imprimirTokens()
-{
-    // Nodo auxiliar que recorrera la lista
-    TOKEN* token_aux = tokens_L -> head;
-
-    // Se detiene al pasar todos los tokens
-    while(token_aux != NULL)
-    {
-        fprintf(tokens,"(%i, %i)\n", token_aux -> clase, token_aux -> valor);
-        fflush(tokens);
-        token_aux = token_aux -> siguiente;
-    }
-}
-
 // Determina si la lista cuenta con elementos
 int esVacia(LISTA* lista)
 {
@@ -410,6 +362,28 @@ int esVacia(LISTA* lista)
         return 1;
     
     return 0;
+}
+
+// Encuentra el valor de una entrada de la tabla
+int encontrarValor(LISTA* lista, char* cad)
+{
+    // Nodo de apoyo a las comparaciones
+    NODO* nodo_aux = lista -> head;
+
+    // Evita buscar en tablas vacias
+    if(nodo_aux == NULL)
+        return -1;
+    
+    while (nodo_aux != NULL)
+    {
+        if(!strcmp(nodo_aux -> cad, cad))
+            return nodo_aux -> valor;
+
+        nodo_aux = nodo_aux -> siguiente;
+    }
+
+    // No hubo coincidencias
+    return -1;
 }
 
 // Verifica si una entrada pertenece a una tabla
@@ -524,13 +498,61 @@ void generarTablas()
     agregarEntrada(listas[9], "like");
 }
 
+// Agrega el token a la coleccion
+void generarToken(int clase, int valor)
+{
+    // Reserva el espacio para los nuevos datos
+    TOKEN* token_aux = crearToken(clase, valor);
+    
+    // Cuando no hay tokens
+    if(tokens_L -> head == NULL)
+    {
+        // Se le colocan ambas referencias
+        tokens_L -> head = token_aux;
+        tokens_L -> tail = token_aux;
+    }
+    // Cuando hay un token
+    else if (tokens_L -> head == tokens_L -> tail)
+    {
+        // El nuevo token se mueve al final
+        tokens_L -> tail = token_aux;
+
+        // Se encadena con el inicio
+        tokens_L -> head -> siguiente = token_aux;
+    }
+    // Cuando hay 2 o mas tokens
+    else
+    {
+        // El nuevo token se mueve al final
+        tokens_L -> tail -> siguiente = token_aux;
+
+        // El nuevo token se mueve al final
+        tokens_L -> tail = token_aux;
+    }
+}
+
+// Guarda la secuencia de tokens en un archivo
+void imprimirTokens()
+{
+    // Nodo auxiliar que recorrera la lista
+    TOKEN* token_aux = tokens_L -> head;
+
+    // Se detiene al pasar todos los tokens
+    while(token_aux != NULL)
+    {
+        fprintf(tokens,"(%i,%i)\n", token_aux -> clase, token_aux -> valor);
+        fflush(tokens);
+        token_aux = token_aux -> siguiente;
+    }
+}
+
 // Coloca todas las tablas en un archivo
 void imprimirTablas()
 {
     // Abrimos flujo de datos
     tablas = fopen("tablas.txt","w");
 
-    // Recore el arreglo de listas para imprimirlas
+    // Recorre el arreglo de listas para imprimirlas
     for(int i = 0; i < 10; i++)
     {
         // Omitimos las clases sin registros
@@ -615,28 +637,6 @@ void buscaNombre(int clase)
     }    
 }
 
-// Encuentra el valor de una entrada de la tabla
-int encontrarValor(LISTA* lista, char* cad)
-{
-    // Nodo de apoyo a las comparaciones
-    NODO* nodo_aux = lista -> head;
-
-    // Evita buscar en tablas vacias
-    if(nodo_aux == NULL)
-        return -1;
-    
-    while (nodo_aux != NULL)
-    {
-        if(!strcmp(nodo_aux -> cad, cad))
-            return nodo_aux -> valor;
-
-        nodo_aux = nodo_aux -> siguiente;
-    }
-
-    // No hubo coincidencias
-    return -1;
-}
-
 // Libera la memoria reservada para el programa
 void liberarMemoria()
 {
@@ -652,9 +652,10 @@ void liberarMemoria()
         // Pierde al referencia
         listas[i] = NULL;
         
-        // Libera el espacio de los tokens
-        vaciarTokens();
     }
+
+    // Libera el espacio de los tokens
+    vaciarTokens();
 }
 
 // Elimina todos los nodos de una lista
